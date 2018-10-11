@@ -1,0 +1,4 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<ns0:GetWeatherResponse xmlns:ns0="http://www.webserviceX.NET">
+  <ns0:GetWeatherResult>????</ns0:GetWeatherResult>
+</ns0:GetWeatherResponse>

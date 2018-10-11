@@ -1,0 +1,93 @@
+#%RAML 1.0
+title: Global Weather API
+version: v1.0
+securitySchemes:
+  basic:
+    description: This API supports Basic Authentication.
+    type: Basic Authentication
+          
+securedBy: [basic]
+
+types:
+  successfulResponse:
+    displayName: Successful response
+    type: object
+    properties:
+      location:
+        required: false
+        displayName: Location
+        description: Location for which weather information is being retrieved
+        type: string
+      time:
+        required: false
+        displayName: Time
+        description: Time weather report was retrieved
+        type: string
+      wind:
+        required: false
+        displayName: Wind
+        description: Wind speed, in km/sec
+        type: string
+      visibility:
+        required: false
+        displayName: Visibility
+        description: Visibility, in km
+        type: string
+      skyConditions: 
+        required: false
+        displayName: Sky Conditions
+        description: Sky Conditions for the day
+        type: string
+      temperature:
+        required: false
+        displayName: Temperature
+        description: Temperature, in Celcius
+        type: string
+      dewPoint: 
+        required: false
+        displayName: Dew Point
+        description: Dew Point
+        type: string
+      relativeHumidity:
+        required: false
+        displayName: Humidity
+        description: Humidity, %
+        type: string
+      status:
+        required: false
+        displayName: Status
+        description: status
+        type: string
+/weather:
+  get:
+    displayName: Call current weather data for one location
+    description: Access current weather data for any location
+    queryParameters:
+      city:
+        required: false
+        displayName: City
+        description: You can call by city name. The API responds with weather results for that city. 
+        type: string 
+      Mode:
+        required: false
+        default: json
+        example:
+          value: json
+        displayName: mode
+        description: Determines format of response. Possible values are `xml` and `html`. If mode parameter is empty the format is `json` by default.'
+        type: string
+        enum:
+        - json
+        - xml
+        - html 
+    responses:
+      200:
+        body:
+          application/json:
+            displayName: response
+            description: Successful response
+            type: successfulResponse
+            example: !include exchange_modules/f7796a83-34e4-48d9-bcb9-549c506676ce/global-weather-example/1.0.0/global-weather-example.raml
+      404:
+        description: Not found response
+    body: {}
