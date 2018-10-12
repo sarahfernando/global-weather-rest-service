@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns:mulexml="http://www.mulesoft.org/schema/mule/xml" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:ws="http://www.mulesoft.org/schema/mule/ws" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ws http://www.mulesoft.org/schema/mule/ws/current/mule-ws.xsd
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:mulexml="http://www.mulesoft.org/schema/mule/xml" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:ws="http://www.mulesoft.org/schema/mule/ws" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ws http://www.mulesoft.org/schema/mule/ws/current/mule-ws.xsd
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/apikit http://www.mulesoft.org/schema/mule/apikit/current/mule-apikit.xsd
@@ -7,17 +7,16 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/current/mule-xml.xsd">
     <http:listener-config name="global-weather-httpListenerConfig" host="0.0.0.0" port="8082" doc:name="HTTP Listener Configuration" />
-    <apikit:config name="global-weather-config" raml="global-weather.raml" consoleEnabled="false" doc:name="Router" keepRamlBaseUri="false"/>
-    <ws:consumer-config name="Web_Service_Consumer" wsdlLocation="http://ec2-54-166-240-39.compute-1.amazonaws.com:3000/GlobalWeather?WSDL" service="GlobalWeather" port="GlobalWeatherSoap" serviceAddress="http://ec2-54-166-240-39.compute-1.amazonaws.com:3000/GlobalWeather" doc:name="Web Service Consumer"/>
+    <apikit:config name="global-weather-config" raml="global-weather.raml" consoleEnabled="false" doc:name="Router" keepRamlBaseUri="false" />
+    <ws:consumer-config name="Web_Service_Consumer" wsdlLocation="http://ec2-54-166-240-39.compute-1.amazonaws.com:3000/GlobalWeather?WSDL" service="GlobalWeather" port="GlobalWeatherSoap" serviceAddress="http://ec2-54-166-240-39.compute-1.amazonaws.com:3000/GlobalWeather" doc:name="Web Service Consumer" />
     <flow name="global-weather-main">
         <http:listener config-ref="global-weather-httpListenerConfig" path="/api/*" doc:name="HTTP" />
-        <apikit:router config-ref="global-weather-config" doc:name="APIkit Router"/>
-        <exception-strategy ref="global-weather-apiKitGlobalExceptionMapping" doc:name="Reference Exception Strategy"/>
+        <apikit:router config-ref="global-weather-config" doc:name="APIkit Router" />
+        <exception-strategy ref="global-weather-apiKitGlobalExceptionMapping" doc:name="Reference Exception Strategy" />
     </flow>
-
     <flow name="get:/weather:global-weather-config">
         <dw:transform-message doc:name="Transform Message" metadata:id="1a3e25ae-25d2-4f2d-885b-14b389d86170">
-            <dw:input-payload/>
+            <dw:input-payload />
             <dw:set-payload><![CDATA[%dw 1.0
 %output application/xml
 %namespace ns0 http://www.webserviceX.NET
@@ -28,12 +27,12 @@ http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/
 	}
 }]]></dw:set-payload>
         </dw:transform-message>
-        <logger message="++++SF++++++++The WS input is : #[payload]+++++++++++++" level="INFO" doc:name="WS input Logger"/>
-        <ws:consumer config-ref="Web_Service_Consumer" operation="GetWeather" doc:name="Web Service Consumer"/>
-        <mulexml:dom-to-xml-transformer returnClass="java.lang.String" mimeType="application/xml" outputEncoding="UTF-8" doc:name="DOM to XML"/>
-        <logger message="++++SF++++++++The WS OUPUT : #[payload]+++++++++SF++++" level="INFO" doc:name="Log WS Response"/>
-        <set-payload value="#[xpath3('/*:GetWeatherResponse',payload,&quot;STRING&quot;)]	" doc:name="Extract CDATA section to Payload"/>
-        <logger message="++++SF++++++++The EXTRACTED CDATA : #[payload]++++++SF+++++++" level="INFO" doc:name="Log extracted CDATA"/>
+        <logger message="++++SF++++++++The WS input is : #[payload]+++++++++++++" level="INFO" doc:name="WS input Logger" />
+        <ws:consumer config-ref="Web_Service_Consumer" operation="GetWeather" doc:name="Web Service Consumer" />
+        <mulexml:dom-to-xml-transformer returnClass="java.lang.String" mimeType="application/xml" outputEncoding="UTF-8" doc:name="DOM to XML" />
+        <logger message="++++SF++++++++The WS OUPUT : #[payload]+++++++++SF++++" level="INFO" doc:name="Log WS Response" />
+        <set-payload value="#[xpath3('/*:GetWeatherResponse',payload,&quot;STRING&quot;)] " doc:name="Extract CDATA section to Payload" />
+        <logger message="++++SF++++++++The EXTRACTED CDATA : #[payload]++++++SF+++++++" level="INFO" doc:name="Log extracted CDATA" />
         <dw:transform-message doc:name="Transform Message">
             <dw:set-payload><![CDATA[%dw 1.0
 %output application/xml encoding='utf-8'
@@ -54,9 +53,9 @@ http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/
 	
 }]]></dw:set-payload>
         </dw:transform-message>
-        <set-payload value="#[xpath3('//GetWeatherResponse')]" mimeType="application/xml" doc:name="Set Payload"/>
+        <set-payload value="#[xpath3('//GetWeatherResponse')]" mimeType="application/xml" doc:name="Set Payload" />
         <dw:transform-message doc:name="Transform Message" metadata:id="3fe399ed-1ddf-49fd-9448-cefc94269d5f">
-            <dw:input-payload mimeType="application/xml"/>
+            <dw:input-payload mimeType="application/xml" />
             <dw:set-payload><![CDATA[%dw 1.0
 %output application/json
 ---
@@ -72,35 +71,91 @@ http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/
 	status: payload.NewDataSet.Status
 }]]></dw:set-payload>
         </dw:transform-message>
-        <logger message="+++++++++++SF++++CDATA as XML: #[payload] +++++SF++++" level="INFO" doc:name="log CDATA as XML "/>
-        <set-payload value="#[payload]" mimeType="application/json" doc:name="Set Payload"/>
+        <logger message="+++++++++++SF++++CDATA as XML: #[payload] +++++SF++++" level="INFO" doc:name="log CDATA as XML " />
+        <set-payload value="#[payload]" mimeType="application/json" doc:name="Set Payload" />
+    </flow>
+    <flow name="get:/cities:global-weather-config">
+        <dw:transform-message doc:name="Transform Message">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/xml
+%namespace ns0 http://www.webserviceX.NET
+---
+{
+	ns0#GetCitiesByCountry: {
+		ns0#CountryName: inboundProperties."http.query.params".country
+	}
+}]]></dw:set-payload>
+        </dw:transform-message>
+        <logger message="++++GETCITIES++++++++The WS input is : #[payload]+++++++++++++" level="INFO" doc:name="WS Input Logger"/>
+        <ws:consumer config-ref="Web_Service_Consumer" operation="GetCitiesByCountry" doc:name="Web Service Consumer"/>
+        <mulexml:dom-to-xml-transformer returnClass="java.lang.String" mimeType="application/xml" outputEncoding="UTF-8" doc:name="DOM to XML"/>
+        <logger message="++++GETCITIES++++++++The WS OUPUT : #[payload]+++++++++SF++++" level="INFO" doc:name="Logger"/>
+        <set-payload value="#[xpath3('/*:GetCitiesByCountryResponse',payload,&quot;STRING&quot;)] " doc:name="Extract CDATA to Payload"/>
+        <logger message="++++SF++++++++The EXTRACTED CDATA : #[payload]++++++SF+++++++" level="INFO" doc:name="Log Extracted CDATA"/>
+        <dw:transform-message doc:name="Transform Message">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/xml encoding='utf-8'
+%var whiteSpaceRemoved = payload replace '    ' with ""
+%var cdataRemoved = whiteSpaceRemoved replace "<![CDATA[" with ""
+%var cdataEndBracketsRemoved = cdataRemoved replace "]]" with ""
+%var allCdataTagsRemoved = cdataEndBracketsRemoved replace ">" with ""
+%var allLTReplaced = allCdataTagsRemoved replace "&lt;" with "<"
+//%var allLTReplaced2 = allLTReplaced replace "<" with "<"
+%var allGTReplaced = allLTReplaced replace "&gt;" with ">"
+%var allnReplaced = allGTReplaced replace "\n" with ""
 
+
+//%var asXML = "<?xml version=1.0 encoding='utf-8'" ++ allCdataTagsRemoved
+---
+{
+	GetCitiesByCountryResponse: trim allnReplaced
+	
+}]]></dw:set-payload>
+        </dw:transform-message>
+        <logger message="++++SF++++++++The EXTRACTED CDATA STEP 2: #[payload]++++++SF+++++++" level="INFO" doc:name="Logger"/>
+        <set-payload value="#[xpath3('//GetCitiesByCountryResponse')]" encoding="UTF-8" mimeType="application/xml" doc:name="Set Payload"/>
+        <dw:transform-message doc:name="Transform Message" metadata:id="10090591-3c79-4ed2-928c-66e0f014a572">
+            <dw:input-payload mimeType="application/xml"/>
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	country: payload.NewDataSet.Table[0].Country,
+	cities: payload.NewDataSet map {
+		cityName: $.City
+	}
+}
+	
+]]></dw:set-payload>
+        </dw:transform-message>
+        <logger message="++++SF++++++++The EXTRACTED CDATA XML : #[payload]++++++SF+++++++" level="INFO" doc:name="Logger"/>
+        <set-payload value="#[payload]" doc:name="Set Payload"/>
     </flow>
     <apikit:mapping-exception-strategy name="global-weather-apiKitGlobalExceptionMapping">
         <apikit:mapping statusCode="404">
             <apikit:exception value="org.mule.module.apikit.exception.NotFoundException" />
-            <set-property propertyName="Content-Type" value="application/json" doc:name="Property"/>
-            <set-payload value="{ &quot;message&quot;: &quot;Resource not found&quot; }" doc:name="Set Payload"/>
+            <set-property propertyName="Content-Type" value="application/json" doc:name="Property" />
+            <set-payload value="{ &quot;message&quot;: &quot;Resource not found&quot; }" doc:name="Set Payload" />
         </apikit:mapping>
         <apikit:mapping statusCode="405">
             <apikit:exception value="org.mule.module.apikit.exception.MethodNotAllowedException" />
-            <set-property propertyName="Content-Type" value="application/json" doc:name="Property"/>
-            <set-payload value="{ &quot;message&quot;: &quot;Method not allowed&quot; }" doc:name="Set Payload"/>
+            <set-property propertyName="Content-Type" value="application/json" doc:name="Property" />
+            <set-payload value="{ &quot;message&quot;: &quot;Method not allowed&quot; }" doc:name="Set Payload" />
         </apikit:mapping>
         <apikit:mapping statusCode="415">
             <apikit:exception value="org.mule.module.apikit.exception.UnsupportedMediaTypeException" />
-            <set-property propertyName="Content-Type" value="application/json" doc:name="Property"/>
-            <set-payload value="{ &quot;message&quot;: &quot;Unsupported media type&quot; }" doc:name="Set Payload"/>
+            <set-property propertyName="Content-Type" value="application/json" doc:name="Property" />
+            <set-payload value="{ &quot;message&quot;: &quot;Unsupported media type&quot; }" doc:name="Set Payload" />
         </apikit:mapping>
         <apikit:mapping statusCode="406">
             <apikit:exception value="org.mule.module.apikit.exception.NotAcceptableException" />
-            <set-property propertyName="Content-Type" value="application/json" doc:name="Property"/>
-            <set-payload value="{ &quot;message&quot;: &quot;Not acceptable&quot; }" doc:name="Set Payload"/>
+            <set-property propertyName="Content-Type" value="application/json" doc:name="Property" />
+            <set-payload value="{ &quot;message&quot;: &quot;Not acceptable&quot; }" doc:name="Set Payload" />
         </apikit:mapping>
         <apikit:mapping statusCode="400">
             <apikit:exception value="org.mule.module.apikit.exception.BadRequestException" />
-            <set-property propertyName="Content-Type" value="application/json" doc:name="Property"/>
-            <set-payload value="{ &quot;message&quot;: &quot;Bad request&quot; }" doc:name="Set Payload"/>
+            <set-property propertyName="Content-Type" value="application/json" doc:name="Property" />
+            <set-payload value="{ &quot;message&quot;: &quot;Bad request&quot; }" doc:name="Set Payload" />
         </apikit:mapping>
     </apikit:mapping-exception-strategy>
 </mule>

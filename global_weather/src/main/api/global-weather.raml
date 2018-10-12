@@ -1,7 +1,27 @@
 #%RAML 1.0
+baseUri: https://mocksvc.mulesoft.com/mocks/6fa62240-f699-4df0-846c-90c540a3813f # 
 title: Global Weather API
 version: v1.0
 types:
+  cityOfCountry: 
+      type: object
+      properties:
+        country: 
+          required: false
+          displayName: Country
+          description: Country of interest
+          type: string
+        cities: 
+          required: false
+          displayName: City
+          description: City retrieved for a given country
+          type: city[]
+  city: 
+      required: false
+      displayName: City
+      description: City retrieved for a given country
+      type: string
+
   successfulResponse:
     displayName: Successful response
     type: object
@@ -61,18 +81,11 @@ types:
         displayName: City
         description: You can call by city name. The API responds with weather results for that city. 
         type: string 
-      Mode:
+      country:
         required: false
-        default: json
-        example:
-          value: json
-        displayName: mode
-        description: Determines format of response. Possible values are `xml` and `html`. If mode parameter is empty the format is `json` by default.'
-        type: string
-        enum:
-        - json
-        - xml
-        - html 
+        displayName: Country
+        description: You can call by country name. The API responds with weather results
+        type: string 
     responses:
       200:
         body:
@@ -81,6 +94,43 @@ types:
             description: Successful response
             type: successfulResponse
             example: !include exchange_modules/f7796a83-34e4-48d9-bcb9-549c506676ce/global-weather-example/1.0.0/global-weather-example.raml
+      400:
+        body:
+          application/json:
+            displayName: error response
+            description: Bad request
       404:
-        description: Not found response
+        body:
+          application/json:
+            displayName: error response
+            description: Resource not found response
+/cities:
+  get:
+    displayName: Get a list of major cities for a given country
+    description: Retrieve a list of major cities for a given country
+    queryParameters:
+      country:
+        required: true
+        displayName: Country
+        description: You can call by country name. The API responds with list of major cities for that country. 
+        type: string 
+    responses:
+      200:
+        body:
+          application/json:
+            displayName: response
+            description: Successful response
+            type: cityOfCountry
+            example: !include exchange_modules/f7796a83-34e4-48d9-bcb9-549c506676ce/global-weather-cities-example/1.0.2/global-weather-cities-example.raml
+      400:
+        body:
+          application/json:
+            displayName: error response
+            description: Invalid Request
+      404:
+        body:
+          application/json:
+            displayName: error response
+            description: Resource not found response
     body: {}
+
