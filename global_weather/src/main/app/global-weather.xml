@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns:mulexml="http://www.mulesoft.org/schema/mule/xml" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:ws="http://www.mulesoft.org/schema/mule/ws" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:mulexml="http://www.mulesoft.org/schema/mule/xml" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:ws="http://www.mulesoft.org/schema/mule/ws" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ws http://www.mulesoft.org/schema/mule/ws/current/mule-ws.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/apikit http://www.mulesoft.org/schema/mule/apikit/current/mule-apikit.xsd
-http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
-http://www.mulesoft.org/schema/mule/ws http://www.mulesoft.org/schema/mule/ws/current/mule-ws.xsd
 http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/current/mule-xml.xsd">
     <http:listener-config name="global-weather-httpListenerConfig" host="0.0.0.0" port="8082" doc:name="HTTP Listener Configuration" />
     <apikit:config name="global-weather-config" raml="global-weather.raml" consoleEnabled="false" doc:name="Router" keepRamlBaseUri="false"/>
@@ -34,6 +34,45 @@ http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/
         <logger message="++++SF++++++++The WS OUPUT : #[payload]+++++++++SF++++" level="INFO" doc:name="Log WS Response"/>
         <set-payload value="#[xpath3('/*:GetWeatherResponse',payload,&quot;STRING&quot;)]	" doc:name="Extract CDATA section to Payload"/>
         <logger message="++++SF++++++++The EXTRACTED CDATA : #[payload]++++++SF+++++++" level="INFO" doc:name="Log extracted CDATA"/>
+        <dw:transform-message doc:name="Transform Message">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/xml encoding='utf-8'
+%var whiteSpaceRemoved = payload replace '    ' with ""
+%var cdataRemoved = whiteSpaceRemoved replace "<![CDATA[" with ""
+%var cdataEndBracketsRemoved = cdataRemoved replace "]]" with ""
+%var allCdataTagsRemoved = cdataEndBracketsRemoved replace ">" with ""
+%var allLTReplaced = allCdataTagsRemoved replace "&lt;" with "<"
+//%var allLTReplaced2 = allLTReplaced replace "<" with "<"
+%var allGTReplaced = allLTReplaced replace "&gt;" with ">"
+%var allnReplaced = allGTReplaced replace "\n" with ""
+
+
+//%var asXML = "<?xml version=1.0 encoding='utf-8'" ++ allCdataTagsRemoved
+---
+{
+	GetWeatherResponse: trim allnReplaced
+	
+}]]></dw:set-payload>
+        </dw:transform-message>
+        <set-payload value="#[xpath3('//GetWeatherResponse')]" mimeType="application/xml" doc:name="Set Payload"/>
+        <dw:transform-message doc:name="Transform Message" metadata:id="3fe399ed-1ddf-49fd-9448-cefc94269d5f">
+            <dw:input-payload mimeType="application/xml"/>
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	location: payload.NewDataSet.Location,
+	time: payload.NewDataSet.Time,
+	wind: payload.NewDataSet.Wind,
+	visibility: payload.NewDataSet.Visibility,
+	skyConditions: payload.NewDataSet.SkyConditions,
+	temperature: payload.NewDataSet.Temperature as :string,
+	dewPoint: payload.NewDataSet.DewPoint,
+	relativeHumidity: payload.NewDataSet.RelativeHumidity as :string,
+	status: payload.NewDataSet.Status
+}]]></dw:set-payload>
+        </dw:transform-message>
+        <logger message="+++++++++++SF++++CDATA as XML: #[payload] +++++SF++++" level="INFO" doc:name="log CDATA as XML "/>
         <set-payload value="#[payload]" mimeType="application/json" doc:name="Set Payload"/>
 
     </flow>
