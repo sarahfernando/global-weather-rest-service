@@ -1,5 +1,5 @@
 #%RAML 1.0
-baseUri: https://mocksvc.mulesoft.com/mocks/6fa62240-f699-4df0-846c-90c540a3813f # 
+baseUri: https://mocksvc.mulesoft.com/mocks/dc6fc164-9fa7-48f2-a491-d4d680b0d978 # baseUri: https://mocksvc.mulesoft.com/mocks/6fa62240-f699-4df0-846c-90c540a3813f # 
 title: Global Weather API
 version: v1.0
 types:
@@ -13,14 +13,17 @@ types:
           type: string
         cities: 
           required: false
-          displayName: City
-          description: City retrieved for a given country
+          displayName: Cities
+          description: List of Cities retrieved for a given country
           type: city[]
   city: 
-      required: false
-      displayName: City
-      description: City retrieved for a given country
-      type: string
+    type: object
+    properties: 
+      cityName: 
+        required: false
+        displayName: name
+        description: City retrieved for a given country
+        type: string
 
   successfulResponse:
     displayName: Successful response
@@ -121,7 +124,7 @@ types:
             displayName: response
             description: Successful response
             type: cityOfCountry
-            example: !include exchange_modules/f7796a83-34e4-48d9-bcb9-549c506676ce/global-weather-cities-example/1.0.2/global-weather-cities-example.raml
+            example: !include exchange_modules/f7796a83-34e4-48d9-bcb9-549c506676ce/global-weather-cities-example/1.0.3/global-weather-cities-example.raml
       400:
         body:
           application/json:

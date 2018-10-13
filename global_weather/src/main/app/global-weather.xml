@@ -15,7 +15,7 @@ http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/
         <exception-strategy ref="global-weather-apiKitGlobalExceptionMapping" doc:name="Reference Exception Strategy" />
     </flow>
     <flow name="get:/weather:global-weather-config">
-        <dw:transform-message doc:name="Transform Message" metadata:id="1a3e25ae-25d2-4f2d-885b-14b389d86170">
+        <dw:transform-message doc:name="Map Input Parameters" metadata:id="1a3e25ae-25d2-4f2d-885b-14b389d86170">
             <dw:input-payload />
             <dw:set-payload><![CDATA[%dw 1.0
 %output application/xml
@@ -23,7 +23,8 @@ http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/
 ---
 {
 	ns0#GetWeather: {
-		ns0#CityName: inboundProperties."http.query.params".city
+		ns0#CityName: inboundProperties."http.query.params".city,
+		ns0#CountryName: inboundProperties."http.query.params".country
 	}
 }]]></dw:set-payload>
         </dw:transform-message>
@@ -33,7 +34,7 @@ http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/
         <logger message="++++SF++++++++The WS OUPUT : #[payload]+++++++++SF++++" level="INFO" doc:name="Log WS Response" />
         <set-payload value="#[xpath3('/*:GetWeatherResponse',payload,&quot;STRING&quot;)] " doc:name="Extract CDATA section to Payload" />
         <logger message="++++SF++++++++The EXTRACTED CDATA : #[payload]++++++SF+++++++" level="INFO" doc:name="Log extracted CDATA" />
-        <dw:transform-message doc:name="Transform Message">
+        <dw:transform-message doc:name="Remove CDATA tags and Format XML">
             <dw:set-payload><![CDATA[%dw 1.0
 %output application/xml encoding='utf-8'
 %var whiteSpaceRemoved = payload replace '    ' with ""
@@ -54,8 +55,8 @@ http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/
 }]]></dw:set-payload>
         </dw:transform-message>
         <set-payload value="#[xpath3('//GetWeatherResponse')]" mimeType="application/xml" doc:name="Set Payload" />
-        <dw:transform-message doc:name="Transform Message" metadata:id="3fe399ed-1ddf-49fd-9448-cefc94269d5f">
-            <dw:input-payload mimeType="application/xml" />
+        <dw:transform-message doc:name="Map XML to JSON" metadata:id="3fe399ed-1ddf-49fd-9448-cefc94269d5f">
+            <dw:input-payload mimeType="application/xml" doc:sample="C:\Users\Sanjana\Documents\sarah jobs\sampleXML\request.xml"/>
             <dw:set-payload><![CDATA[%dw 1.0
 %output application/json
 ---
@@ -71,11 +72,11 @@ http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/
 	status: payload.NewDataSet.Status
 }]]></dw:set-payload>
         </dw:transform-message>
-        <logger message="+++++++++++SF++++CDATA as XML: #[payload] +++++SF++++" level="INFO" doc:name="log CDATA as XML " />
+        <logger message="+++++++++++SF++++CDATA as JSON: #[payload] +++++SF++++" level="INFO" doc:name="logJSON" />
         <set-payload value="#[payload]" mimeType="application/json" doc:name="Set Payload" />
     </flow>
     <flow name="get:/cities:global-weather-config">
-        <dw:transform-message doc:name="Transform Message">
+        <dw:transform-message doc:name="Map Input Parameters">
             <dw:set-payload><![CDATA[%dw 1.0
 %output application/xml
 %namespace ns0 http://www.webserviceX.NET
@@ -89,13 +90,14 @@ http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/
         <logger message="++++GETCITIES++++++++The WS input is : #[payload]+++++++++++++" level="INFO" doc:name="WS Input Logger"/>
         <ws:consumer config-ref="Web_Service_Consumer" operation="GetCitiesByCountry" doc:name="Web Service Consumer"/>
         <mulexml:dom-to-xml-transformer returnClass="java.lang.String" mimeType="application/xml" outputEncoding="UTF-8" doc:name="DOM to XML"/>
-        <logger message="++++GETCITIES++++++++The WS OUPUT : #[payload]+++++++++SF++++" level="INFO" doc:name="Logger"/>
+        <logger message="++++GETCITIES++++++++The WS OUPUT : #[payload]+++++++++SF++++" level="INFO" doc:name="Log WS Response"/>
         <set-payload value="#[xpath3('/*:GetCitiesByCountryResponse',payload,&quot;STRING&quot;)] " doc:name="Extract CDATA to Payload"/>
         <logger message="++++SF++++++++The EXTRACTED CDATA : #[payload]++++++SF+++++++" level="INFO" doc:name="Log Extracted CDATA"/>
         <dw:transform-message doc:name="Transform Message">
             <dw:set-payload><![CDATA[%dw 1.0
 %output application/xml encoding='utf-8'
 %var whiteSpaceRemoved = payload replace '    ' with ""
+%var whiteSpaceRemoved = whiteSpaceRemoved replace '  ' with ""
 %var cdataRemoved = whiteSpaceRemoved replace "<![CDATA[" with ""
 %var cdataEndBracketsRemoved = cdataRemoved replace "]]" with ""
 %var allCdataTagsRemoved = cdataEndBracketsRemoved replace ">" with ""
@@ -112,23 +114,25 @@ http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/
 	
 }]]></dw:set-payload>
         </dw:transform-message>
-        <logger message="++++SF++++++++The EXTRACTED CDATA STEP 2: #[payload]++++++SF+++++++" level="INFO" doc:name="Logger"/>
+        <logger message="++++SF++++++++The XML: #[payload]++++++SF+++++++" level="INFO" doc:name="Remove CDATA tags and Format XML"/>
         <set-payload value="#[xpath3('//GetCitiesByCountryResponse')]" encoding="UTF-8" mimeType="application/xml" doc:name="Set Payload"/>
-        <dw:transform-message doc:name="Transform Message" metadata:id="10090591-3c79-4ed2-928c-66e0f014a572">
-            <dw:input-payload mimeType="application/xml"/>
+        <logger message="++++SF++++++++The Sending to map to JSON  : #[payload]++++++SF+++++++" level="INFO" doc:name="Logger"/>
+        <dw:transform-message doc:name="Map XML to JSON" metadata:id="10090591-3c79-4ed2-928c-66e0f014a572">
+            <dw:input-payload mimeType="application/xml" doc:sample="C:\Users\Sanjana\Documents\sarah jobs\sampleXML\requestCitiesByCountry.xml"/>
             <dw:set-payload><![CDATA[%dw 1.0
 %output application/json
 ---
 {
-	country: payload.NewDataSet.Table[0].Country,
+	country:  payload.NewDataSet.Table[0].Country,
 	cities: payload.NewDataSet map {
 		cityName: $.City
 	}
+	
 }
 	
 ]]></dw:set-payload>
         </dw:transform-message>
-        <logger message="++++SF++++++++The EXTRACTED CDATA XML : #[payload]++++++SF+++++++" level="INFO" doc:name="Logger"/>
+        <logger message="++++SF++++++++The JSON output : #[payload]++++++SF+++++++" level="INFO" doc:name="Log JSON"/>
         <set-payload value="#[payload]" doc:name="Set Payload"/>
     </flow>
     <apikit:mapping-exception-strategy name="global-weather-apiKitGlobalExceptionMapping">
