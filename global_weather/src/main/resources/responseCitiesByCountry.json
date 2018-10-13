@@ -1,0 +1,14 @@
+{  
+	"country": "Australia",
+	"cities": [
+		{
+		"cityName": "A", 
+		}
+		{
+		"cityName": "B", 
+		}
+		{
+		"cityName": "C", 
+		}
+	]
+}
