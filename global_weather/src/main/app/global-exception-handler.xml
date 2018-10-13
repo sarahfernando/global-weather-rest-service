@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:cluster="http://www.mulesoft.org/schema/mule/ee/cluster" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+    <configuration defaultExceptionStrategy-ref="Choice_Exception_Strategy" doc:name="Configuration">
+        <http:config useTransportForUris="false"/>
+    </configuration>
+    <choice-exception-strategy name="Choice_Exception_Strategy">
+            <catch-exception-strategy when="#[exception.causeMatches('org.mule.module.apikit.exception.NotFoundException')]" doc:name="404 Resource Not Found Exception">
+                <set-property propertyName="http.status" value="404" doc:name="Property"/>
+                <set-payload value="#[&quot;404 - Resource not found.&quot; + &quot;\n&quot; + exception]" doc:name="Set Payload"/>
+                <logger message="#['++++++SF++++In ERROR HANDLING' + payload]" level="INFO" doc:name="Logger"/>
+            </catch-exception-strategy>
+            <catch-exception-strategy when="#[exception.causeMatches('org.mule.module.apikit.exception.MethodNotAllowedException')]" doc:name="405 Method not Allowed Exception">
+                <set-property propertyName="http.status" value="405" doc:name="Property"/>
+                <set-payload value="#[&quot;405 - Method not allowed.&quot; + &quot;\n&quot; + exception]" doc:name="Set Payload"/>
+                <logger message="#['++++++SF++++In ERROR HANDLING' + payload]" level="INFO" doc:name="Logger"/>
+            </catch-exception-strategy>
+            <catch-exception-strategy when="#[exception.causeMatches('org.mule.module.apikit.exception.BadRequestException')]" doc:name="400 Bad Request Exception">
+                <set-property propertyName="http.status" value="400" doc:name="Property"/>
+                <set-payload value="#[&quot;400 - Bad Request.&quot; + &quot;\n&quot; + exception]" doc:name="Set Payload"/>
+                <logger level="INFO" doc:name="Logger"/>
+            </catch-exception-strategy>
+            <catch-exception-strategy doc:name="Data Unavailable - All Other Exceptions">
+                <set-property propertyName="http.status" value="500" doc:name="Property"/>
+                <set-payload value="#[&quot;500 -Data Unvailable . Please try later.&quot; + &quot;\n&quot; + exception]" doc:name="Set Payload"/>
+                <logger level="INFO" doc:name="Logger"/>
+            </catch-exception-strategy>
+        </choice-exception-strategy>
+
+
+</mule>

@@ -74,9 +74,38 @@ types:
         displayName: Status
         description: status
         type: string
+
+/countries:
+  displayName: Countries
+  description: Countries collection resource
+
+  /{country_id}/cities:
+    description: Countrty instance resource allowing to retrieve cities of a country given by country_id.
+    get:
+      displayName: Get a list of major cities for a given country
+      description: Retrieve a list of cities for a given country
+      responses:
+        200:
+          body:
+            application/json:
+              displayName: response
+              description: Successful response
+              type: cityOfCountry
+              example: !include exchange_modules/f7796a83-34e4-48d9-bcb9-549c506676ce/global-weather-cities-example/1.0.3/global-weather-cities-example.raml
+        400:
+          body:
+            application/json:
+              displayName: error response
+              description: Invalid Request
+        404:
+          body:
+            application/json:
+              displayName: error response
+              description: Resource not found response
+
 /weather:
   get:
-    displayName: Call current weather data for one location
+    displayName: Get current weather data for a location
     description: Access current weather data for any location
     queryParameters:
       city:
@@ -107,33 +136,6 @@ types:
           application/json:
             displayName: error response
             description: Resource not found response
-/cities:
-  get:
-    displayName: Get a list of major cities for a given country
-    description: Retrieve a list of major cities for a given country
-    queryParameters:
-      country:
-        required: true
-        displayName: Country
-        description: You can call by country name. The API responds with list of major cities for that country. 
-        type: string 
-    responses:
-      200:
-        body:
-          application/json:
-            displayName: response
-            description: Successful response
-            type: cityOfCountry
-            example: !include exchange_modules/f7796a83-34e4-48d9-bcb9-549c506676ce/global-weather-cities-example/1.0.3/global-weather-cities-example.raml
-      400:
-        body:
-          application/json:
-            displayName: error response
-            description: Invalid Request
-      404:
-        body:
-          application/json:
-            displayName: error response
-            description: Resource not found response
+
     body: {}
 
